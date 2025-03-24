@@ -5,7 +5,15 @@ description = "Лабораторные работы по надёжности"
 authors = [{ name = "INovikov Home", email = "nov.ilucha@yandex.ru" }]
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-dependencies = ["ipykernel (>=6.29.5,<7.0.0)", "ciw (>=3.2.4,<4.0.0)", "pandas (>=2.2.3,<3.0.0)", "numpy (>=2.2.4,<3.0.0)", "plotly (>=6.0.1,<7.0.0)", "seaborn (>=0.13.2,<0.14.0)", "skipy (>=0.2.3,<0.3.0)"]
+dependencies = [
+  "ipykernel (>=6.29.5,<7.0.0)",
+  "ciw (>=3.2.4,<4.0.0)",
+  "pandas (>=2.2.3,<3.0.0)",
+  "numpy (>=2.2.4,<3.0.0)",
+  "plotly (>=6.0.1,<7.0.0)",
+  "seaborn (>=0.13.2,<0.14.0)",
+  "skipy (>=0.2.3,<0.3.0)",
+]
 
 [tool.poetry]
 package-mode = false
