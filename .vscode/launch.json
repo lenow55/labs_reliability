@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "name": "run test3",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "test.py",
+      "cwd": "${workspaceFolder}/lab3",
+      "justMyCode": false
+    }
+  ]
+}
