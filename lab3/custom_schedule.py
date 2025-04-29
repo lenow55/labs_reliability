@@ -1,19 +1,29 @@
 from collections.abc import Generator
+from uuid import UUID, uuid4
 
 from ciw import Schedule
+from ciw.dists import Distribution
+from repair_manager import (  # pyright: ignore[reportImplicitRelativeImport]
+    RepairManager,
+    RepairRecord,
+)
 
 # TODO: надо сделать возможным передавать сюда класс, отвечающий за каналы восстановления
 # то есть чтобы перед восстановлением нужно было занимать лок в объекте очереди
 
 
-class ExponentialFailureSchedule(Schedule):
-    failure_generator: Generator[float, None, None]
-    recovery_generator: Generator[float, None, None]
+class RepairedFailureSchedule(Schedule):
+    failure_dist: Distribution
+    repair_manager: RepairManager
+    srv_id: UUID = uuid4()
+    start_dates: list[float] = []
+    failure_dates: list[float] = []
+    repair_start_date: list[float] = []
 
     def __init__(
         self,
-        failure_gen: Generator[float, None, None],
-        recovery_gen: Generator[float, None, None],
+        failure_dist: Distribution,
+        repair_mgr: RepairManager,
         preemption: bool | str = False,
         offset: float = 0.0,
     ):
@@ -22,8 +32,8 @@ class ExponentialFailureSchedule(Schedule):
 
         Parameters
         ----------
-        failure_rate : float
-            Rate (lambda) of the exponential distribution for failure times.
+        failure_dist : Distribution
+            Ciw расределение возникновения ошибок, относительное время
         recovery_rate : float
             Rate (lambda) of the exponential distribution for recovery times.
         preemption : Union[bool, str], optional
@@ -32,8 +42,8 @@ class ExponentialFailureSchedule(Schedule):
             Time offset to start the schedule from. Default is 0.0.
         """
         self.schedule_type: str = "exponential_failure_recovery"
-        self.failure_generator = failure_gen
-        self.recovery_generator = recovery_gen
+        self.failure_dist = failure_dist
+        self.repair_manager = repair_mgr
         super().__init__([1, 0], [0.0, float("inf")], preemption, offset)
 
     def initialise(self):  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -46,6 +56,10 @@ class ExponentialFailureSchedule(Schedule):
         self.schedule_generator = self.get_schedule_generator(
             self.shift_end_dates, self.numbers_of_servers, self.offset
         )
+        self.start_dates = []
+        self.failure_dates = []
+        self.repair_start_date = []
+        self.repair_manager.initialise()
 
     def get_schedule_generator(
         self, boundaries: list[float], values: list[int], offset: float
@@ -68,18 +82,36 @@ class ExponentialFailureSchedule(Schedule):
             Time and number of available servers (1 for up, 0 for down).
         """
         current_time = offset
-        is_up = True
+        is_init = True
+        nearest_id: UUID | None = None
 
         while True:
-            if is_up:
+            if is_init:
+                self.start_dates.append(current_time)
                 # Time until failure
-                duration = self.failure_generator.__next__()
+                duration: float = self.failure_dist.sample()  # pyright: ignore[reportAssignmentType]
                 current_time += duration
                 yield current_time, 0  # servers go down
-                is_up = False
+                self.failure_dates.append(current_time)
+                is_init = False
+
+            # Time until recovery
+            record, flag = self.repair_manager(
+                srv_id=self.srv_id, current_time=current_time, nearest_id=nearest_id
+            )
+            if isinstance(record, RepairRecord):
+                # сразу возвращает абсолютное время до события
+                if flag:
+                    self.repair_start_date.append(current_time)
+                current_time = record.next_event_time
+                nearest_id = record.id
+                yield current_time, int(flag)  # servers continious down
             else:
-                # Time until recovery
-                duration = self.recovery_generator.__next__()
+                # вернул none, значит можно поднимать сразу
+                nearest_id = None
+                self.start_dates.append(current_time)
+                # генерируем время нормальной работы
+                duration: float = self.failure_dist.sample()  # pyright: ignore[reportAssignmentType]
                 current_time += duration
-                yield current_time, 1  # servers come back up
-                is_up = True
+                yield current_time, 0  # servers go up
+                self.failure_dates.append(current_time)
