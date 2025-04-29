@@ -2,14 +2,13 @@ import queue
 from dataclasses import dataclass
 from queue import Queue
 from typing import Any
-from uuid import UUID
 
 from ciw.dists import Distribution
 
 
 @dataclass
 class RepairRecord:
-    id: UUID
+    id: int
     next_event_time: float
 
     def __lt__(self, other: Any) -> bool:
@@ -19,9 +18,9 @@ class RepairRecord:
 
 
 class RepairManager:
-    repair_in_progress: dict[UUID, RepairRecord]
+    repair_in_progress: dict[int, RepairRecord]
     max_chanels: int | None
-    repair_in_wait: Queue[UUID]
+    repair_in_wait: Queue[int]
     nearest_srv: RepairRecord | None = None
     repair_dist: Distribution  # распределение времени восстановления
 
@@ -44,11 +43,11 @@ class RepairManager:
         self.nearest_srv = None
 
     def __call__(
-        self, srv_id: UUID, current_time: float, nearest_id: UUID | None
+        self, srv_id: int, current_time: float, nearest_id: int | None
     ) -> tuple[RepairRecord | None, bool]:
         # когда у нас не ограничена очередь
         if not self.max_chanels:
-            if not nearest_id:
+            if not isinstance(nearest_id, int):
                 # считаем время восстановления и возвращаем
                 repair_time: float = self.repair_dist.sample()  # pyright: ignore[reportAssignmentType]
                 record = RepairRecord(
@@ -59,7 +58,7 @@ class RepairManager:
             # возвращаем None, чтобы он продолжил работу
             return None, True
 
-        if not nearest_id:
+        if not isinstance(nearest_id, int):
             # пришёл новый сервис на восстановление
             if len(self.repair_in_progress) < self.max_chanels:
                 # свободное место в очереди

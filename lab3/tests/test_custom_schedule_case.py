@@ -44,11 +44,13 @@ N = ciw.create_network(
             failure_dist=dists.Sequential([20, 25, 5]),
             repair_mgr=manager,
             preemption="reroute",
+            id=0,
         ),
         RepairedFailureSchedule(
             failure_dist=dists.Sequential([20, 30]),
             repair_mgr=manager,
             preemption="reroute",
+            id=1,
         ),
         1,
     ],

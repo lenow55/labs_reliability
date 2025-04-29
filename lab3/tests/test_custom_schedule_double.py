@@ -14,22 +14,22 @@ sched1 = RepairedFailureSchedule(
     # failure_dist=dists.Sequential([6.0]),
     repair_mgr=manager,
     preemption="reroute",
+    id=0,
 )
-sched1.srv_id = UUID("00000000-0000-0000-0000-000000000001")
 sched2 = RepairedFailureSchedule(
     failure_dist=dists.Sequential([3.0, 6.0]),
     # failure_dist=dists.Sequential([6.0]),
     repair_mgr=manager,
     preemption="reroute",
+    id=1,
 )
-sched2.srv_id = UUID("00000000-0000-0000-0000-000000000002")
 sched3 = RepairedFailureSchedule(
     failure_dist=dists.Sequential([8.0, 4.0]),
     # failure_dist=dists.Sequential([6.0]),
     repair_mgr=manager,
     preemption="reroute",
+    id=2,
 )
-sched3.srv_id = UUID("00000000-0000-0000-0000-000000000003")
 
 N_schedule = ciw.create_network(
     arrival_distributions=[

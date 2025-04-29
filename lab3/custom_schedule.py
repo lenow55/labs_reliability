@@ -1,5 +1,4 @@
 from collections.abc import Generator
-from uuid import UUID, uuid4
 
 from ciw import Schedule
 from ciw.dists import Distribution
@@ -15,7 +14,7 @@ from repair_manager import (  # pyright: ignore[reportImplicitRelativeImport]
 class RepairedFailureSchedule(Schedule):
     failure_dist: Distribution
     repair_manager: RepairManager
-    srv_id: UUID = uuid4()
+    srv_id: int
     start_dates: list[float] = []
     failure_dates: list[float] = []
     repair_start_date: list[float] = []
@@ -24,6 +23,7 @@ class RepairedFailureSchedule(Schedule):
         self,
         failure_dist: Distribution,
         repair_mgr: RepairManager,
+        id: int,
         preemption: bool | str = False,
         offset: float = 0.0,
     ):
@@ -44,6 +44,7 @@ class RepairedFailureSchedule(Schedule):
         self.schedule_type: str = "exponential_failure_recovery"
         self.failure_dist = failure_dist
         self.repair_manager = repair_mgr
+        self.srv_id = id
         super().__init__([1, 0], [0.0, float("inf")], preemption, offset)
 
     def initialise(self):  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -83,7 +84,7 @@ class RepairedFailureSchedule(Schedule):
         """
         current_time = offset
         is_init = True
-        nearest_id: UUID | None = None
+        nearest_id: int | None = None
 
         while True:
             if is_init:

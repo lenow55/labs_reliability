@@ -1,4 +1,3 @@
-from uuid import UUID
 import ciw
 from ciw import dists
 
@@ -13,14 +12,14 @@ sched1 = RepairedFailureSchedule(
     failure_dist=dists.Sequential([2.0, 8.0]),
     repair_mgr=manager,
     preemption="reroute",
+    id=0,
 )
-sched1.srv_id = UUID("00000000-0000-0000-0000-000000000001")
 sched2 = RepairedFailureSchedule(
     failure_dist=dists.Sequential([3.0, 6.0]),
     repair_mgr=manager,
     preemption="reroute",
+    id=1,
 )
-sched2.srv_id = UUID("00000000-0000-0000-0000-000000000002")
 
 N_schedule = ciw.create_network(
     arrival_distributions=[
