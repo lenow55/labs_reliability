@@ -7,7 +7,7 @@ from custom_arrival_node import (
     CustomArrivalNode,  # pyright: ignore[reportImplicitRelativeImport]
 )
 from custom_schedule import (
-    ExponentialFailureSchedule,  # pyright: ignore[reportImplicitRelativeImport]
+    RepairedFailureSchedule,  # pyright: ignore[reportImplicitRelativeImport]
 )
 from numpy.random import PCG64
 
@@ -45,8 +45,8 @@ N = ciw.create_network(
         ]
     ),
     number_of_servers=[
-        ExponentialFailureSchedule(
-            failure_gen=fail_gen, recovery_gen=recovery_gen, preemption="restart"
+        RepairedFailureSchedule(
+            failure_dist=fail_gen, repair_mgr=recovery_gen, preemption="restart"
         ),
         # ciw.Schedule(
         #     numbers_of_servers=[1, 0, 1],
