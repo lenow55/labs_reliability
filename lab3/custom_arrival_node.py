@@ -9,16 +9,28 @@ class CustomArrivalNode(ciw.ArrivalNode):
         super().__init__(simulation)
 
     @override
-    def release_individual(self, next_node, next_individual):
+    def release_individual(self, next_node: ciw.Node, next_individual):
         """
         Either rejects the next_individual die to lack of capacity,
         or sends that individual to baulk or not.
         """
-        if (next_node.number_of_individuals >= next_node.node_capacity) or (
+        # берём текущую вместимость по серверам
+        next_node_capacity = next_node.node_capacity
+        if isinstance(next_node.schedule, ciw.Schedule):
+            # если есть schedule, то в node_capacity будет вместимость только очередей
+            # надо добавть вместимость по серверам
+            next_node_capacity += next_node.c
+        if (next_node.number_of_individuals >= next_node_capacity) or (
             self.simulation.number_of_individuals >= self.system_capacity
         ):
             bypass_node = self.simulation.nodes[self.node_bypass_index]
-            if (bypass_node.number_of_individuals >= bypass_node.node_capacity) or (
+            bypass_node_capacity = bypass_node.node_capacity
+            if isinstance(bypass_node.schedule, ciw.Schedule):
+                # если есть schedule, то в node_capacity будет вместимость только очередей
+                # надо добавть вместимость по серверам
+                next_node_capacity += bypass_node.c
+
+            if (bypass_node.number_of_individuals >= bypass_node_capacity) or (
                 self.simulation.number_of_individuals >= self.system_capacity
             ):
                 self.record_rejection(next_node, next_individual)
@@ -29,3 +41,4 @@ class CustomArrivalNode(ciw.ArrivalNode):
                 )
         else:
             self.decide_baulk(next_node, next_individual)
+

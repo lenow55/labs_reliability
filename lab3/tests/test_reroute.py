@@ -23,6 +23,7 @@ def mock_simulation():
     node_reroute.number_of_individuals = 0
     node_reroute.node_capacity = 2
     node_reroute.write_baulking_or_rejection_record = MagicMock()
+    node_reroute.schedule = None
 
     # "Exit" нода
     exit_node = MagicMock(spec=ExitNode)
