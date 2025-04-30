@@ -52,6 +52,12 @@ N = ciw.create_network(
             preemption="reroute",
             id=1,
         ),
+        # RepairedFailureSchedule(
+        #     failure_dist=dists.Sequential([100, 150]),
+        #     repair_mgr=manager,
+        #     preemption="reroute",
+        #     id=2,
+        # ),
         1,
     ],
     # У дуплексного канала с двух сторон по два слота для ожидания
