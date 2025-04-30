@@ -1,6 +1,7 @@
-from ciw import routing, Simulation
+from ciw import Simulation, routing
 from ciw.individual import Individual
 from ciw.node import Node
+from ciw.schedules import Schedule
 
 
 class ReservRerouting(routing.NodeRouting):
@@ -31,7 +32,12 @@ class ReservRerouting(routing.NodeRouting):
         next_node = self.simulation.nodes[self.reroute_to]
         if not isinstance(next_node, Node):
             return self.simulation.nodes[-1]
-        if next_node.number_of_individuals >= next_node.node_capacity:
+        next_node_capacity = next_node.node_capacity
+        if isinstance(next_node.schedule, Schedule):
+            # если есть schedule, то в node_capacity будет вместимость только очередей
+            # надо добавть вместимость по серверам
+            next_node_capacity += next_node.c
+        if next_node.number_of_individuals >= next_node_capacity:
             next_node.write_baulking_or_rejection_record(ind, record_type="rejection")
             return self.simulation.nodes[-1]
         else:
